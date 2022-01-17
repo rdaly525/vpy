@@ -1,0 +1,58 @@
+#An attempt to write a basic BNF for the Verilog Module Interface
+
+Module = ModuleHeader ModuleBody endmodule
+
+ModuleBody = .*
+
+Identifier = Simple_identifier
+           | Escaped_identifier
+
+SimpleIdentifier = [a-zA-Z_]{[a-zA-Z0-9_$]}
+EscapedIdentifier = \{\S}+
+
+ModuleIdentifier = Identifier
+PortIdentifier = Identifier
+ParameterIdentifier = Identifier
+
+ModuleHeader = ModuleNoParameterHeader
+             | ModuleParameterHeader
+
+ModuleNoParameterHeader = module ModuleIdentifier (PortDeclList);
+
+ModuleParameterHeader = module ModuleIdentifier #(ParameterDeclList) (PortDeclList);
+
+SoftwareType = int | string | HardwareType
+
+HardwareType = logic | wire | reg
+
+Direction = input | output | inout
+
+PortDeclList = PortDecl
+         | PortDecl, PortDecl
+
+PortDecl = Direction HardwareType? Range? PortIdentifier
+
+Range = [ConstIntExpr : ConstIntExpr]
+
+Integer = [1-9][0-9_]+
+
+ConstIntExpr = ParameterIdentifier
+             | Integer
+             | SystemCall(ConstIntExpr)
+             | UnaryOp ConstExpr
+             | ConstIntExpr BinaryOp ConstIntExpr
+             | ConstIntExpr ? ConstIntExpr : ConstIntExpr
+
+UnaryOp = + - ~
+BinaryOp = + - * / % == ~= && || < <= > >= & | ^ ^~ >> <<
+
+ParameterDeclList = ParameterDecl
+                  | ParameterDecl , ParameterDecl
+
+ParameterDecl = parameter ParameterType? ParameterIdentifier = ConstValue
+
+ParameterType = int | string
+
+ConstString = "\S*"
+
+ConstValue = ConstIntExpr | ConstString
